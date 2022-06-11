@@ -1,12 +1,12 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection');
 // create our Post model
-class Purchase extends Model {
+class Cart extends Model {
 
 }
 
 // create fields/columns for Post model
-Purchase.init(
+Cart.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -32,10 +32,10 @@ Purchase.init(
   },
   {
     sequelize,
-    freezeTableName: true,
+    freezeTablename: true,
     underscored: true,
-    modelName:'purchase'
+    modelname:'cart'
   }
 );
 
-module.exports = Purchase;
+module.exports = Cart;

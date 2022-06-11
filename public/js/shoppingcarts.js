@@ -14,7 +14,15 @@ $(document).ready(() => {
 
     // ******************** Event listeners *********************
     $(document).on('click', (event) => {
-
+        if ($(event.target).attr('id') === 'delete') {
+            alert("delete");
+            const cartId = $(event.target).attr('cartid');
+             fetch(`/api/cart/${cartId}`, {
+                method: 'DELETE'
+              }).then(data => window.location.href = "/cart")
+              .catch(err => console.error(err));
+            
+        }
         // Continue browsing button clicked
         if ($(event.target).attr('id') === 'continueBrowsing') {
             window.location.href = "/browse"
@@ -28,32 +36,32 @@ $(document).ready(() => {
         // Confirm purchse button clicked
         if ($(event.target).attr('id') === 'confirmPurchase') {
 
-            $.get("/api/user_data").then(function (data) {
-                console.log('user.email: ', data.email);
-                console.log('user.id: ', data.id);
+            $.get("/api/cart").then(function (data) {
+                // console.log('user.email: ', data.email);
+                console.log("==================")
+                console.log(data);
 
                 // Add the shoppincart to the purchases
-                cleanedCarts.forEach((cart) => {
-                    Object.values(cart).forEach((cartElement) => {
-                        if (typeof cartElement === 'object' && cartElement != null && cartElement[0] != undefined) {
-                            $.post("/api/purchases", {
-                                UserId: data.id,
-                                BookId: cartElement[0].id
-                            }, (cart_answer) => {
-                                // window.location.href = "/cart";
-                            });
-                        }
+                data.forEach((cart) => {
+                    $.post("/api/purchase", {
+                        BookTitle: cart.title,
+                        BookPrice:cart.price
+                    }, (cart_answer) => {
+                        console.log('cart_answer: ', cart_answer);
+                        // window.location.href = "/cart";
                     });
+                    // Object.values(cart).forEach((cartElement) => {
+                        // if (typeof cartElement === 'object' && cartElement != null && cartElement[0] != undefined) {
+                        //     $.post("/api/purchases", {
+                        //         UserId: data.id,
+                        //         BookId: cartElement[0].id
+                        //     }.then((cart_answer) => {
+                        //         // window.location.href = "/cart";
+                        //         console.log('Cart deleted: ', cart_answer);
+                        //     });
+                        // }
+                    // });
                 });
-
-                // Delete the shoppingcart
-                $.ajax({
-                    method: "DELETE",
-                    url: `/api/shoppingcarts/${data.id}`
-                }).then((cart_answer) => {
-                    console.log('Cart deleted: ', cart_answer);
-                });
-
 
                 // Display the modal
                 $('#purchaeConfirmationModal').modal();
@@ -81,57 +89,65 @@ $(document).ready(() => {
         // Load the shoppingcarts
         $.ajax({
             method: "GET",
-            url: "/api/shoppingcarts/"
+            url: "/api/cart/"
         }).then((shoppingcarts) => {
             let total = 0;
-
+            console.log(shoppingcarts);
             if (shoppingcarts.length > 0) {
                 // Clean the data
                 cleanedCarts = shoppingcarts.map((shoppingcart) => {
                     return {
                         id: shoppingcart.id,
-                        UserId: shoppingcart.UserId,
-                        Books: shoppingcart.Books
+                        UserId: shoppingcart.user_id,
+                        title: shoppingcart.title,
+                        price: shoppingcart.price
                     }
                 });
-
+                console.log(cleanedCarts);
                 // Create the table
                 cleanedCarts.forEach((cart) => {
                     let tr = $('<tr>');
-                    let td0 = $('<td>');
+                    // let td0 = $('<td>');
                     let td1 = $('<td>');
-                    let td2 = $('<td>');
+                    // let td2 = $('<td>');
                     let td3 = $('<td>');
                     let td4 = $('<td>');
-                    td0.text(cart.id);
+                    let td5 = $('<button id="delete" cartId="'+cart.id+'">Delete</button>')
+                    console.log(cart);
+                    // td0.text(cart.id);
                     td1.text(cart.UserId);
-                    Object.values(cart).forEach((cartElement) => {
-                        if (typeof cartElement === 'object' && cartElement != null && cartElement[0] != undefined) {
-                            td2.text(cartElement[0].id);
-                            td3.text(cartElement[0].title);
-                            td4.text(cartElement[0].price);
-                            total += parseFloat(cartElement[0].price);
-                        }
-                        tr.append(td0);
+                    // td2.text(cart.id);
+                    td3.text(cart.title);
+                    td4.text("$ "+cart.price);
+                    // Object.values(cart).forEach((cartElement) => {
+                    //     if (typeof cartElement === 'object' && cartElement != null && cartElement[0] != undefined) {
+                    //         td2.text(cart.id);
+                    //         td3.text(cart.title);
+                    //         td4.text(cart.price);
+                    //         total += parseFloat(cart.price);
+                    //     }
+                        // tr.append(td0);
+                        total += parseFloat(cart.price);
                         tr.append(td1);
-                        tr.append(td2);
+                        // tr.append(td2);
                         tr.append(td3);
                         tr.append(td4);
-                    });
+                        tr.append(td5);
+                    // });
                     $('#cartTableBody').append(tr);
                 });
                 total = total.toFixed(2);
                 let tr = $('<tr>');
-                let td0 = $('<td>');
+                // let td0 = $('<td>');
                 let td1 = $('<td>');
-                let td2 = $('<td>');
+                // let td2 = $('<td>');
                 let td3 = $('<td>');
                 let td4 = $('<td>');
                 td3.text('Total');
                 td4.text(`${total}`);
-                tr.append(td0);
+                // tr.append(td0);
                 tr.append(td1);
-                tr.append(td2);
+                // tr.append(td2);
                 tr.append(td3);
                 tr.append(td4);
                 $('#cartTableBody').append(tr);
@@ -147,13 +163,13 @@ $(document).ready(() => {
         $('#purchasesTableBody').empty();
 
         // Load the purchases
-        $.get("/api/user_data").then(function (data) {
-            console.log('user.email: ', data.email);
-            console.log('user.id: ', data.id);
+        // $.get("/api/user_data").then(function (data) {
+        //     console.log('user.email: ', data.email);
+        //     console.log('user.id: ', data.id);
 
             $.ajax({
                 method: "GET",
-                url: `/api/purchase/${data.id}` // Missing 
+                url: `/api/purchase/` // Missing 
             }).then((purchases) => {
 
                 // Clean the data
@@ -161,8 +177,9 @@ $(document).ready(() => {
                     return {
                         id: purchase.id,
                         date: moment(purchase.date).format("MMM Do YY"),
-                        UserId: purchase.UserId,
-                        Books: purchase.Books
+                        UserId: purchase.user_id,
+                        title: purchase.title,
+                        price:purchase.price
                     }
                 });
                 console.log('cleanedPurchases: ', cleanedPurchases);
@@ -170,32 +187,28 @@ $(document).ready(() => {
                 // Create the table
                 cleanedPurchases.forEach((purchase) => {
                     let tr = $('<tr>');
-                    let td0 = $('<td>');
+                    // let td0 = $('<td>');
                     let td1 = $('<td>');
-                    let td2 = $('<td>');
+                    // let td2 = $('<td>');
                     let td3 = $('<td>');
                     let td4 = $('<td>');
                     let td5 = $('<td>');
-                    td0.text(purchase.id);
+                    // td0.text(purchase.id);
                     td1.text(purchase.UserId);
                     td5.text(purchase.date);
-                    Object.values(purchase).forEach((purchaseElement) => {
-                        if (typeof purchaseElement === 'object' && purchaseElement != null && purchaseElement[0] != undefined) {
-                            td2.text(purchaseElement[0].id);
-                            td3.text(purchaseElement[0].title);
-                            td4.text(purchaseElement[0].price);
-                        }
-                    });
-                    tr.append(td0);
+                    // td2.text(purchase.id);
+                    td3.text(purchase.title);
+                    td4.text(purchase.price)
+                    // tr.append(td0);
                     tr.append(td1);
-                    tr.append(td2);
+                    // tr.append(td2);
                     tr.append(td3);
                     tr.append(td4);
                     tr.append(td5);
                     $('#purchasesTableBody').append(tr);
                 });
             });
-        });
+        // });
 
     }
 

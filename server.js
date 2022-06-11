@@ -2,55 +2,37 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const exphbs = require('express-handlebars');
-var passport = require("./config/passport");
-// const SequelizeStore = require('connect-session-sequelize')(session.Store);
-// const sequelize = require("./config/connection.js");
-var compression = require('compression')
-
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-
-// compress all responses
-app.use(compression())
-
-// Requiring our models for syncing
-var db = require("./models");
-
+const sequelize = require("./config/connection");
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 const sess = {
-    secret: 'Super secret secret',
-    resave: true,
-    saveUninitialized: true
-  };
+  secret: 'Super secret secret',
+  cookie: {},
+  resave: false,
+  saveUninitialized: true,
+  store: new SequelizeStore({
+    db: sequelize
+  })
+};
 
 app.use(session(sess));
-app.use(passport.initialize());
-app.use(passport.session());
 
-const hbs = exphbs.create({
-  helpers: {
-    format_date: date => {
-      return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-    }
-  }
-});
+const helpers = require('./utils/helpers');
 
-app.engine("handlebars", hbs.engine);
-app.set("view engine", "handlebars");
+const hbs = exphbs.create({helpers});
+
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-require("./routes/html-routes.js")(app);
-require("./routes/user-api-routes.js")(app);
+app.use(require('./controllers/'));
 
-// app.use(require('./controllers/'));
-
-db.sequelize.sync().then(function() {
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}!`);
-});
+sequelize.sync({ force: false }).then(() => {
+  app.listen(PORT, () => console.log('Now listening'));
 });

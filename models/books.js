@@ -1,12 +1,12 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection');
 // create our Post model
-class Purchase extends Model {
+class Books extends Model {
 
 }
 
 // create fields/columns for Post model
-Purchase.init(
+Books.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -14,28 +14,29 @@ Purchase.init(
       primaryKey: true,
       autoIncrement: true
     },
-    title: {
+    booktype: {
+        type: DataTypes.STRING,
+        allowNull: false  
+    },
+    bookname: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false  
+    },
+    bookimage: {
+      type: DataTypes.STRING,
+      allowNull: false  
     },
     price: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL,
       allowNull: false,
-    },
-    user_id: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'user',
-        key: 'id'
-      }
     },
   },
   {
     sequelize,
-    freezeTableName: true,
+    freezeTablename: true,
     underscored: true,
-    modelName:'purchase'
+    modelname:'book'
   }
 );
 
-module.exports = Purchase;
+module.exports = Books;

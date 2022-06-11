@@ -4,12 +4,13 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "jest",
+    "start": "node server.js",
+    "watch": "nodemon server.js"
   },
   "repository": {
-    "type": "git",
-    "url": "git+https://github.com/patel-rajendra/Full-Stack-Tech-Blog.git"
+    "booktype": "git",
+    "url": ""
   },
   "author": "",
   "license": "ISC",
@@ -29,6 +30,7 @@
     "express.js": "^1.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
+    "nodemon": "^2.0.16",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "sequelize": "^6.20.1"
